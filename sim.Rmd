@@ -1,13 +1,9 @@
 ---
 title: "Predictors of Smoking Severity in Patients with Schizophrenia"
-author: "Nathan Lyles"
 date: "May 19, 2016"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 ##Introduction
 This data simulation explores the relationship between schizophrenia, recreational drug and alcohol use, and smoking intensity. 
 
