@@ -93,4 +93,5 @@ Residual error plot is flat and homoscedastic.
 plot(fit3,1)
 ```
 
+##Conclusion
 Cannabis (and other recreational drug) use is associated with a reduction in smoking intensity, perhaps as a form of self-medication. Higher PANSS scores are associated with greater smoking intensity. Greater smoking intensity was also seen among white patients with schizophrenia. These results present insight for further research into the causes of smoking in this population, and potential targets for intervention. 
