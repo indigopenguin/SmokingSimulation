@@ -1,0 +1,100 @@
+---
+title: "Predictors of Smoking Severity in Patients with Schizophrenia"
+author: "Nathan Lyles"
+date: "May 19, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Introduction
+This data simulation explores the relationship between schizophrenia, recreational drug and alcohol use, and smoking intensity. 
+
+Based on a small 2011 study (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3156655/) of only 90 participants: mostly male, middle aged and low income. Thus the insights gleaned from this study are applicable primarily to a similarly distributed population. Though this simulation preserves the demographic distribution, let's explore these relationships in a larger dataset. 
+
+###Background
+Mental illness is often associated with a decreased life expectancy, and this is indeed the case for schizophrenia. Life expectancy among patients with schizophrenia is reduced by 10-25 years, though suicide represents only a small part of mortality risk. Prevalence of smoking in those with schizophrenia is significantly higher than prevalence in the general population, and in other mental illnesses. Patients with schizophrenia generally begin smoking before disease onset, inhale more deeply, and are less likely to quit smoking. Negative symptoms (e.g. social avoidance, difficult in abstract thinking, low motivation) of schizophrenia are assciated with greater smoking intensity, as smoking temporarily improves these symptoms.  
+
+PANSS is the Positive and Negative Symptom Scale, a composite measure of both postive (e.g. hallucinations, delusions) and negative symptoms. It is hypothesized that a higher PANSS score--corresponding to a greater number of symptoms--will lead to a greater number of cigarettes smoked. This simulation seeks to replicate the results of this study, including the "protective" effect of recreational drug use (excluding alcohol) on smoking intensity. 
+
+###Methods
+
+
+* Gender (M, F)
+* Race (Black, White, Native American, Other)
+* Age
+* Income (Monthly)
+* PANSS (Measure of psychiatric symptom severity)
+* Alcohol (Days per month)
+* Recreational drug use (Days per month):
+  + Cocaine
+  + Cannabis
+  + Sedatives
+* Smoking intensity (Outcome; Measured in number of cigarettes smoked weekly)
+
+
+##Data Simulation
+```{r comment = NA}
+generateDataset2 <- function(N){
+  
+  gender <- sample(c("M", "F"), N, replace = T, prob = c(.71, .29))
+  race <- sample(c("White", "Black", "Native American", "Other"), N, replace = T, prob = c(.42, .41, .2, .15))
+  age <- runif(N, (41-9), (42+9))
+  income <- runif(N, (417-351), (417+351))
+  panss <- runif(N, (32.4-7.1), (32.4+7.1))
+  alcohol <- rpois(N, 14.0)
+  cocaine <- rpois(N, 5.2)
+  cannabis <- rpois(N, 8.4)
+  sedatives <- rpois(N, 6.7)
+  
+  #Coefficients to generate smoking intensity outcome
+  cigsmok <- 221 + 10^.8 * panss + ifelse(race == "White", 17, 0) - 9.1*(cocaine + cannabis + sedatives) 
+  
+  #Generate data frame 
+  data.frame(gender, race, age, income, panss, alcohol, cocaine, cannabis, sedatives, cigsmok)
+}
+
+df2 <- generateDataset2(10000)
+```
+
+## Data Analysis
+####Boxplot
+Comparison of smoking intensity by racial background. White patients show increased smoking intensity compared to their non-White counterparts. 
+```{r comment = NA, echo = F}
+library(ggplot2)
+p <- ggplot(data = df2, aes(x=race, y = cigsmok)) + geom_boxplot()
+p
+```
+
+####Correlation
+Positive correlation between PANSS score and number of cigarettes smoked. This is in keeping with the hypothesis that more symptoms can lead to higher smoking intensity.
+```{r comment = NA, echo = F}
+cor(df2$panss, df2$cigsmok)
+```
+"Protective" effect of recreational drug use on smoking intensity. 
+Negative correlation between number of cigarettes smoked and number of days per month of cocaine use.
+```{r comment = NA, echo = F}
+cor(df2$cigsmok, df2$cocaine)
+```
+Negative correlation between number of cigarettes smoked and number of days per month of cannabis use. 
+```{r comment = NA, echo = F}
+cor(df2$cigsmok, df2$cannabis)
+```
+Negative correlation between number of cigarettes smoked and number of days per month of sedative use.
+```{r comment = NA, echo = F}
+cor(df2$cigsmok, df2$sedatives)
+```
+
+####Linear Model
+Fit linear regression model of factors influencing smoking intensity. PANSS score, cannabis use and white race are significant predictors of smoking intensity. R-squared of ~.6 explains over half of the variability, with a low residual standard error. 
+```{r comment = NA, echo = F}
+fit3 <- lm(cigsmok ~ panss + cannabis + race, data = df2)
+summary(fit3)
+```
+Residual error plot is flat and homoscedastic. 
+```{r comment = NA, echo = F}
+plot(fit3,1)
+```
+
+Cannabis (and other recreational drug) use is associated with a reduction in smoking intensity, perhaps as a form of self-medication. Higher PANSS scores are associated with greater smoking intensity. Greater smoking intensity was also seen among white patients with schizophrenia. These results present insight for further research into the causes of smoking in this population, and potential targets for intervention. 
